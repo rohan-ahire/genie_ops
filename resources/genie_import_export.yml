@@ -13,6 +13,7 @@ resources:
               tgt_genie_dir: ${var.tgt_genie_dir}/sales_overview/ # Target directory where the Genie will be imported on the databricks workspace.
               host_name: ${var.host_name} # host name
               warehouse_id: ${var.warehouse_id} # warehouse id
+              env: ${var.env} # target environment (dev, tst, stg, prd)
     job_genie_export:
       name: job_genie_export
       tasks:
@@ -25,3 +26,4 @@ resources:
               path_to_genie_folder: genie_space_exports # path to genie folder (e.g. src/sales_genie_spaces)
               genie_name: sales_overview # genie name (e.g. sales_overview)
               src_genie_space_id: ${var.src_genie_space_id} # source genie space id (e.g. 01f0b8ff98dd1c2e8bae94417a321946)
+              env: ${var.env} # target environment (dev, tst, stg, prd)

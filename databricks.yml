@@ -26,6 +26,8 @@ variables:
     description: SQL warehouse ID for Genie operations
     lookup:
       warehouse: "Shared endpoint"
+  env:
+    description: Target environment (dev, tst, stg, prd) for export/import operations
 
 targets:
   dev:
@@ -45,6 +47,7 @@ targets:
       tgt_genie_dir: /Workspace/Users/rohan.ahire@databricks.com
       host_name: https://e2-demo-field-eng.cloud.databricks.com
       warehouse_id: ${var.warehouse_id}
+      env: dev
   prod:
     mode: production
     workspace:
@@ -58,6 +61,7 @@ targets:
       tgt_genie_dir: /Workspace/Users/rohan.ahire@databricks.com
       host_name: https://e2-demo-field-eng.cloud.databricks.com
       warehouse_id: ${var.warehouse_id}
+      env: prd
     permissions:
       - user_name: rohan.ahire@databricks.com
         level: CAN_MANAGE
