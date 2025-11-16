@@ -43,7 +43,7 @@ targets:
       src_genie_space_id: 01f0c29c258819faa4a7b971e56ee7eb
       tgt_genie_space_id: None
       tgt_genie_dir: /Workspace/Users/rohan.ahire@databricks.com
-      host_name: e2-demo-field-eng.cloud.databricks.com
+      host_name: https://e2-demo-field-eng.cloud.databricks.com
       warehouse_id: ${var.warehouse_id}
   prod:
     mode: production
@@ -56,7 +56,7 @@ targets:
       src_genie_space_id: 01f0c29c258819faa4a7b971e56ee7eb
       tgt_genie_space_id: None
       tgt_genie_dir: /Workspace/Users/rohan.ahire@databricks.com
-      host_name: e2-demo-field-eng.cloud.databricks.com
+      host_name: https://e2-demo-field-eng.cloud.databricks.com
       warehouse_id: ${var.warehouse_id}
     permissions:
       - user_name: rohan.ahire@databricks.com
