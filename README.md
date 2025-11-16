@@ -27,6 +27,8 @@ genie_ops/
 │       ├── genie_import.py            # Import notebook
 │       └── utils.py                   # Utility classes (ExportGenie, ImportGenie)
 └── genie_space_exports/               # Directory for exported JSON files
+    └── {genie_name}/                  # Subdirectory per Genie (e.g., sales_overview)
+        └── exported_{space_id}_{env}.json
 ```
 
 ## Prerequisites
@@ -44,11 +46,13 @@ Configure the following variables for your environment:
 
 ```yaml
 variables:
-  src_genie_space_id:     # Source Genie space ID to export
-  tgt_genie_space_id:     # Target Genie space ID (use "None" to create new)
-  tgt_genie_dir:          # Target directory for Genie space on workspace
-  host_name:              # Databricks workspace hostname (without https://)
-  warehouse_id:           # SQL warehouse ID (uses lookup for "Shared endpoint")
+  src_genie_space_id:       # Source Genie space ID to export
+  tgt_genie_space_id:       # Target Genie space ID (use "None" to create new)
+  tgt_genie_dir:            # Path where Genie space lives on Databricks workspace
+  path_to_genie_folder:     # Path to Genie space folder in the repo
+  host_name:                # Databricks workspace hostname (with https://)
+  warehouse_id:             # SQL warehouse ID (uses lookup for "Shared Endpoint")
+  env:                      # Target environment (dev, tst, stg, prd)
 ```
 
 ### 2. Environment-Specific Configuration
@@ -56,13 +60,16 @@ variables:
 The bundle supports two targets:
 
 - **dev**: Development environment (default)
+  - `env: dev` - uses `*_dev.json` export files
 - **prod**: Production environment
+  - `env: prd` - uses `*_prd.json` export files
 
 Each target can have different values for:
 - Genie space IDs
 - Workspace paths
 - Warehouse configurations
 - Hostnames
+- Environment identifiers
 
 ## Usage
 
@@ -80,9 +87,17 @@ This will:
 2. Export the space configuration via Databricks Genie API
 3. Apply environment-specific pattern replacements
 4. Generate 4 JSON files (one per environment: dev, tst, stg, prd)
-5. Save files to `genie_space_exports/` directory
+5. Save files to `{path_to_genie_folder}/{genie_name}/` directory
 
-**Exported file format**: `exported_{src_genie_space_id}_{env}.json`
+**Exported file structure**: 
+```
+genie_space_exports/
+  └── sales_overview/
+      ├── exported_01f0c29c258819faa4a7b971e56ee7eb_dev.json
+      ├── exported_01f0c29c258819faa4a7b971e56ee7eb_tst.json
+      ├── exported_01f0c29c258819faa4a7b971e56ee7eb_stg.json
+      └── exported_01f0c29c258819faa4a7b971e56ee7eb_prd.json
+```
 
 ### Import a Genie Space
 
@@ -94,10 +109,15 @@ databricks bundle run job_genie_import --target dev
 ```
 
 This will:
-1. Read the exported JSON file from `genie_space_exports/`
-2. Create a new Genie space (if `tgt_genie_space_id` is None) OR update an existing space
-3. Configure the space with the specified warehouse and directory
-4. Apply the serialized space configuration
+1. Read the environment-specific exported JSON file (determined by `env` variable)
+2. Load the file from `{path_to_genie_folder}/{genie_name}/exported_{space_id}_{env}.json`
+3. Create a new Genie space (if `tgt_genie_space_id` is None) OR update an existing space
+4. Configure the space with the specified warehouse and directory
+5. Apply the serialized space configuration
+
+**Important**: The `env` variable determines which JSON file is used:
+- `--target dev` uses `env: dev` → reads `exported_*_dev.json`
+- `--target prod` uses `env: prd` → reads `exported_*_prd.json`
 
 ### Deploy the Bundle
 
@@ -141,22 +161,24 @@ databricks bundle deploy --target prod
 
 | Parameter | Description | Example |
 |-----------|-------------|---------|
-| `host_name` | Databricks hostname | `e2-demo-field-eng.cloud.databricks.com` |
+| `host_name` | Databricks hostname (with https://) | `https://e2-demo-field-eng.cloud.databricks.com` |
 | `src_genie_space_id` | Source Genie space ID | `01f0c29c258819faa4a7b971e56ee7eb` |
-| `path_to_genie_folder` | Path to export directory | `genie_space_exports` |
+| `path_to_genie_folder` | Path to export directory (variable) | `genie_space_exports` |
 | `genie_name` | Name of the Genie space | `sales_overview` |
 | `root_dir` | Root directory (optional) | `None` (uses workspace root) |
+| `env` | Target environment (variable) | `dev`, `tst`, `stg`, `prd` |
 
 ### Import Job Parameters
 
 | Parameter | Description | Example |
 |-----------|-------------|---------|
-| `host_name` | Databricks hostname | `e2-demo-field-eng.cloud.databricks.com` |
+| `host_name` | Databricks hostname (with https://) | `https://e2-demo-field-eng.cloud.databricks.com` |
 | `src_genie_space_id` | Source space ID (for file lookup) | `01f0c29c258819faa4a7b971e56ee7eb` |
 | `tgt_genie_space_id` | Target space ID (None = create new) | `None` |
-| `src_genie_dir` | Directory with exported JSON | `../../genie_space_exports` |
-| `tgt_genie_dir` | Target workspace directory | `/Workspace/Users/{user}/` |
-| `warehouse_id` | SQL warehouse ID | Resolved via lookup |
+| `src_genie_dir` | Directory with exported JSON | `../../genie_space_exports/sales_overview` |
+| `tgt_genie_dir` | Target workspace directory | `/Workspace/Users/{user}/genie_space_exports/sales_overview/` |
+| `warehouse_id` | SQL warehouse ID (variable) | Resolved via lookup to "Shared Endpoint" |
+| `env` | Target environment (variable) | `dev`, `tst`, `stg`, `prd` |
 
 ## Environment Pattern Replacement
 
@@ -183,8 +205,10 @@ Example:
    - Ensure you have permissions to use the warehouse
 
 3. **File Not Found During Import**
-   - Confirm the exported JSON file exists in `src_genie_dir`
+   - Confirm the exported JSON file exists in `src_genie_dir/{genie_name}/`
    - Check the filename format: `exported_{src_genie_space_id}_{env}.json`
+   - Verify the `env` variable matches the target (dev, tst, stg, prd)
+   - Ensure `src_genie_dir` path includes the `{genie_name}` subdirectory
 
 4. **API Authentication Errors**
    - Verify workspace hostname is correct (without https://)

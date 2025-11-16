@@ -19,7 +19,9 @@ variables:
   tgt_genie_space_id:
     description: Target Genie space ID for import operations
   tgt_genie_dir:
-    description: Base directory path on Databricks workspace for Genie files
+    description: Path where genie space lives on the databricks workspace
+  path_to_genie_folder:
+    description: Path to genie space folder in the repo
   host_name:
     description: Databricks workspace hostname
   warehouse_id:
@@ -47,11 +49,12 @@ targets:
       tgt_genie_dir: /Workspace/Users/rohan.ahire@databricks.com
       host_name: https://e2-demo-field-eng.cloud.databricks.com
       warehouse_id: ${var.warehouse_id}
+      path_to_genie_folder: genie_space_exports
       env: dev
   prod:
     mode: production
     workspace:
-      host: https://e2-demo-west.cloud.databricks.com 
+      host: https://e2-demo-field-eng.cloud.databricks.com
       root_path: /Workspace/Users/rohan.ahire@databricks.com/.bundle/${bundle.name}/${bundle.target}
     variables:
       catalog: users
@@ -61,6 +64,7 @@ targets:
       tgt_genie_dir: /Workspace/Users/rohan.ahire@databricks.com
       host_name: https://e2-demo-field-eng.cloud.databricks.com
       warehouse_id: ${var.warehouse_id}
+      path_to_genie_folder: genie_space_exports
       env: prd
     permissions:
       - user_name: rohan.ahire@databricks.com
