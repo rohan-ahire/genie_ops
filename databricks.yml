@@ -1,0 +1,63 @@
+# This is a Databricks asset bundle definition for genie_ops_demo.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: genie_ops_demo
+  uuid: 323aed07-ea20-4515-95db-861ae2861578
+
+include:
+  - resources/*.yml
+  - resources/*/*.yml
+
+# Variable declarations. These variables are assigned in the dev/prod targets below.
+variables:
+  catalog:
+    description: The catalog to use
+  schema:
+    description: The schema to use
+  src_genie_space_id:
+    description: Source Genie space ID for export/import operations
+  tgt_genie_space_id:
+    description: Target Genie space ID for import operations
+  tgt_genie_dir:
+    description: Base directory path on Databricks workspace for Genie files
+  host_name:
+    description: Databricks workspace hostname
+  warehouse_id:
+    description: SQL warehouse ID for Genie operations
+    lookup:
+      warehouse: "Shared endpoint"
+
+targets:
+  dev:
+    # The default target uses 'mode: development' to create a development copy.
+    # - Deployed resources get prefixed with '[dev my_user_name]'
+    # - Any job schedules and triggers are paused by default.
+    # See also https://docs.databricks.com/dev-tools/bundles/deployment-modes.html.
+    mode: development
+    default: true
+    workspace:
+      host: https://e2-demo-field-eng.cloud.databricks.com
+    variables:
+      catalog: users
+      schema: ${workspace.current_user.short_name}
+      src_genie_space_id: 01f0c29c258819faa4a7b971e56ee7eb
+      tgt_genie_space_id: None
+      tgt_genie_dir: /Workspace/Users/rohan.ahire@databricks.com
+      host_name: e2-demo-field-eng.cloud.databricks.com
+      warehouse_id: ${var.warehouse_id}
+  prod:
+    mode: production
+    workspace:
+      host: https://e2-demo-west.cloud.databricks.com 
+      root_path: /Workspace/Users/rohan.ahire@databricks.com/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: users
+      schema: prod
+      src_genie_space_id: 01f0c29c258819faa4a7b971e56ee7eb
+      tgt_genie_space_id: None
+      tgt_genie_dir: /Workspace/Users/rohan.ahire@databricks.com
+      host_name: e2-demo-field-eng.cloud.databricks.com
+      warehouse_id: ${var.warehouse_id}
+    permissions:
+      - user_name: rohan.ahire@databricks.com
+        level: CAN_MANAGE

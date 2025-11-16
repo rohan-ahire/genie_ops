@@ -1,0 +1,27 @@
+resources:
+  jobs:
+    job_genie_import:
+      name: job_genie_import
+      tasks:
+        - task_key: task_genie_import
+          notebook_task:
+            notebook_path: ../src/notebooks/genie_import.py
+            base_parameters:
+              src_genie_space_id: ${var.src_genie_space_id} # source genie space id
+              tgt_genie_space_id: ${var.tgt_genie_space_id} # target genie space id
+              src_genie_dir: ../../genie_space_exports # Directory containing the exported Genie JSON file.
+              tgt_genie_dir: ${var.tgt_genie_dir}/sales_overview/ # Target directory where the Genie will be imported on the databricks workspace.
+              host_name: ${var.host_name} # host name
+              warehouse_id: ${var.warehouse_id} # warehouse id
+    job_genie_export:
+      name: job_genie_export
+      tasks:
+        - task_key: task_genie_export
+          notebook_task:
+            notebook_path: ../src/notebooks/genie_export.py
+            base_parameters:
+              host_name: ${var.host_name} # host name
+              root_dir: None # (root path of the git repository where repo is cloned on databricks workspace)
+              path_to_genie_folder: genie_space_exports # path to genie folder (e.g. src/sales_genie_spaces)
+              genie_name: sales_overview # genie name (e.g. sales_overview)
+              src_genie_space_id: ${var.src_genie_space_id} # source genie space id (e.g. 01f0b8ff98dd1c2e8bae94417a321946)
